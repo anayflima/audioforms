@@ -1,6 +1,6 @@
 <template>
     <v-form>
-          <p> {{ label }}</p>
+          <!-- <p> {{ label }}</p> -->
           <v-text-field 
             background-color="#EBDEF0" 
             height="50"

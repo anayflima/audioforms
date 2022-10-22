@@ -6,7 +6,7 @@
             :label="f.label" 
             :description="f.description"> 
         </PreviewForms>
-        <v-btn v-if="show" color="#239B56" type="submit"> Submeter </v-btn>
+        <v-btn v-if="show" color="#239B56" type="submit"> Gerar formulário </v-btn>
     </div>
 </template>
 

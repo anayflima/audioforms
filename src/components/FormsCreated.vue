@@ -1,15 +1,21 @@
 <template>
-    <!-- <v-btn color="primary" elevation="1" small @click="ToggleMic"></v-btn> -->
-    <v-btn @click="ToggleMic" color="#239B56" type="submit"> Iniciar formulário </v-btn>
-    <div>
-        <FinalFormsBuild 
-            v-for="f in allFields"
-            :key="f.id"
-            :label="f.label"
-            :transcription="f.audioResult"
-        >
-        </FinalFormsBuild>
-    </div>
+    <v-container >
+        <!-- <v-row align="center"> -->
+        <!-- <v-btn color="primary" elevation="1" small @click="ToggleMic"></v-btn> -->
+        <v-btn class="button" align="center" @click="ToggleMic" color="#239B56" type="submit"> Iniciar formulário </v-btn>
+        <!-- <br/> -->
+        <div>
+            <FinalFormsBuild 
+                v-for="f in allFields"
+                :key="f.id"
+                :label="f.label"
+                :transcription="f.audioResult"
+            >
+            </FinalFormsBuild>
+            <v-btn class="button" align="center" color="#239B56" type="submit"> Submeter </v-btn>
+        </div>
+        <!-- </v-row> -->
+    </v-container>
 </template>
 
 <script>
@@ -35,19 +41,19 @@ export default {
             {
                 id: 0,
                 label: 'Nome',
-                description: 'Insira o seu nome completo',
+                description: 'Fale o seu primeiro nome',
                 audioResult: ""
             },
             {
                 id: 1,
                 label: 'Idade',
-                description: 'Insira a sua idade em anos',
+                description: 'Fale a sua idade em anos',
                 audioResult: ""
             },
             {
                 id: 2,
                 label: 'Curso',
-                description: 'Insira o seu curso na graduação',
+                description: 'Fale o seu curso na graduação',
                 audioResult: ""
             },
         ],
@@ -142,3 +148,9 @@ export default {
 
 }
 </script>
+
+<style>
+.button{
+    margin: 15px
+}
+</style>
