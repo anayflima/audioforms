@@ -1,164 +1,9 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useSpeechSynthesis } from '@vueuse/core'
-
-const isRecording = ref(false)
-const transcript = ref('')
-
-let selectors_array = ['#name', '#age', '#curso']
-// let fields_array = ['Nome', 'Idade', 'Curso']
-let fields_array = [
-    {
-        field: 'Nome',
-        description: 'Insira o seu nome completo',
-    },
-    {
-        field: 'Idade',
-        description: 'Insira a sua idade em anos',
-    },
-    {
-        field: 'Curso',
-        description: 'Insira o seu curso na graduação',
-    },
-]
-
-
-let i = 0
-
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
-const sr = new Recognition()
-
-sr.lang = 'pt-BR';
-
-onMounted(() => {
-	// if you stop talking, it will continue there listening it
-	sr.continuous = true
-
-	sr.interimResults = true
-
-	sr.onstart = () => {
-		console.log('SR Started')
-		isRecording.value = true
-	}
-
-	sr.onend = () => {
-		console.log('SR Stopped')
-		isRecording.value = false
-	}
-
-	sr.onresult = (evt) => {
-		// console.log('evt.results')
-		// console.log(evt.results)
-		for (let i = 0; i < evt.results.length; i++) {
-			const result = evt.results[i]
-
-			if (result.isFinal) CheckForCommand(result)
-		}
-
-		let evt_results_array = Array.from(evt.results)
-		
-		const t = evt_results_array[evt_results_array.length -1][0].transcript
-
-		console.log(t)
-
-		console.log("i = ", i)
-
-        const field = document.querySelector(selectors_array[i])
-        // console.dir(field)
-        field.value = t
-
-		// if (i < selectors_array.length) {
-			
-		// 	const field = document.querySelector(selectors_array[i])
-		// 	// console.dir(field)
-
-        // const field = document.querySelector(selectors_array[i])
-        // console.dir(field)
-
-		// 	field.value = t
-		// 	i = i + 1
-		// 	speakSentence(fields_array[i]).then((result) => {
-		// 		console.log('FIM SPEECH')
-		// 		console.log("IF ACABOU FORMS com i = ", i)
-		// 		if (i >= selectors_array.length) {
-		// 			console.log("ACABOU O FORMS")
-		// 			alert("ACABOU O FORMS")
-		// 			// sr.stop()
-		// 		}
-		// 	})
-		// }
-		
-	}
-})
-
-const CheckForCommand = (result) => {
-    console.log(result)
-	const t = result[0].transcript;
-	if (t.includes('final')) {
-		console.log('identifiquei fim')
-		sr.stop()
-	}
-    
-    // else if (
-	// 	t.includes('what is the time') ||
-	// 	t.includes('what\'s the time')
-	// ) {
-	// 	sr.stop()
-	// 	alert(new Date().toLocaleTimeString())
-	// 	setTimeout(() => sr.start(), 100)
-	// }
-}
-
-async function speakSentence (sentence) {
-	if ('speechSynthesis' in window ) {
-		console.log("vou falar: ", sentence)
-		var to_speak = new SpeechSynthesisUtterance(sentence);
-		to_speak.lang = 'pt-BR'
-
-		window.speechSynthesis.speak(to_speak);
-
-		return new Promise(resolve => {
-			to_speak.onend = resolve;
-		});
-	}
-
-}
-
-const ToggleMic = () => {
-    // 
-	speakSentence("Olá! Vamos iniciar o preenchimento do forms").then((result) => {
-		speakSentence(fields_array[0].description).then((result) => {
-			console.log('FIM SPEECH')
-			if (isRecording.value) {
-				sr.stop()
-			} else {
-				sr.start()
-			}
-		})
-	})
-	// await speakSentence("Olá! Vamos iniciar o preenchimento do forms")
-	// console.log('FIM SPEECH')
-	
-	
-}
-</script>
-
 <template>
-	<div class="app">
-		<button :class="`mic`" @click="ToggleMic">Record</button>
-		<br/>
-		<div class="transcript" ref="transcript"></div>
-		<br/>
-		<!-- <input ref="transcript"></input> -->
 
+  <!-- <p>OLAAAA</p>
 
-		 <form action="/action_page.php">
-            <div v-for="(item, index) in fields_array">
-                <label :for="item.field"> {{ item.field }} </label><br>
-                <input type="text" id="name" name="name" value=""><br><br>
-            </div>
-
-            <!-- <label for="name">Nome:</label><br>
+   <form action="/action_page.php">
+			<label for="name">Nome:</label><br>
 			<input type="text" id="name" name="name" value=""><br><br>
 
 			<label for="age">Idade:</label><br>
@@ -166,37 +11,211 @@ const ToggleMic = () => {
 
 			<label for="curso">Curso:</label><br>
 			<input type="text" id="curso" name="curso" value=""><br><br>
-			<input type="submit" value="Submit"> -->
-		</form> 
+			<input type="submit" value="Submit">
+		</form>  -->
 
-        <ul id="example-2">
-            <li v-for="(item, index) in selectors_array">
-                {{ parentMessage }} - {{ index }} - {{ item }}
-            </li>
-        </ul>
-		
-		<br/>
-		<!-- <input id="input1" ref="transcript" v-model="message" placeholder="edit me" /> -->
-		
-		<!-- <v-text-field ref="transcript" v-model="input"></v-text-field> -->
-		<!-- <v-text-field ref="2" v-model="input" v-text="transcript"></v-text-field> -->
-		<!-- <v-text-field ref="3" v-model="input" v-text="transcript"></v-text-field> -->
-		<br/>
+    <v-container class="pl-10">
+    <v-btn color="primary" elevation="1" small @click="ToggleMic"></v-btn>
+    
+    <br/>
 
-
-	</div>
+    <v-form ref="formNames" v-model="validForm" lazy-validation>
+    <v-row v-for="(field, index) in forms_field" :key="index">
+      <v-col cols="12">
+      <v-text-field
+        v-model="nome"
+        :label="field.label"
+        :placeholder="nome"
+        :id="field.label.toLowerCase()"
+      />
+      </v-col>
+    </v-row>
+    </v-form>
+    <v-btn type="submit" @click="submit">
+    Submit
+    </v-btn>
+    </v-container>
 </template>
 
-<style>
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: 'Fira sans', sans-serif;
+<script>
+
+// import { ref } from 'vue'
+
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
+// const Synthesis = window.speechSynthesis;
+const sr = new Recognition()
+let i = 0
+
+export default {
+    
+    data: () => ({
+
+        isRecording: false,
+        selectors_array: ['#name', '#age', '#curso'],
+        fields_array: ['Nome', 'Idade', 'Curso'],
+        forms_field: [
+            {
+                id: 'nome',
+                label: 'Nome',
+                description: 'Insira o seu nome completo',
+            },
+            {
+                id: 'idade',
+                label: 'Idade',
+                description: 'Insira a sua idade em anos',
+            },
+            {
+                id: 'curso',
+                label: 'Curso',
+                description: 'Insira o seu curso na graduação',
+            },
+        ],
+        nome: "",
+        idade: "",
+        curso: "",
+    }),
+
+    mounted() {
+        console.log("ola")
+        // const field = document.querySelector(this.selectors_array[0])
+        // let field = this.$el.querySelector("#Name").value;
+        // console.dir(field)
+        // console.log("field")
+        // console.log(field)
+
+        console.log('this')
+        console.log(this)
+
+        // this.Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+        console.log(sr)
+
+        
+        // sr =  new Recognition()
+        
+        sr.lang = 'pt-BR';
+        sr.continuous = false
+
+        sr.interimResults = true
+
+        sr.onstart = () => {
+          console.log('SR Started')
+          this.isRecording = true
+        }
+
+        sr.onend = () => {
+          console.log('SR Stopped')
+          this.isRecording = false
+        }
+
+        sr.onresult = (evt) => {
+
+          // console.log('evt.results')
+          // console.log(evt.results)
+
+          for (let i = 0; i < evt.results.length; i++) {
+            const result = evt.results[i]
+
+            if (result.isFinal) this.CheckForCommand()
+          }
+
+          let evt_results_array = Array.from(evt.results)
+
+          const t = evt_results_array[evt_results_array.length -1][0].transcript
+
+          console.log(t)
+
+          // console.log("i = ", i)
+
+          this.nome = t
+
+        }
+      },
+
+    methods: {
+        submit() {
+            console.log("aiosn")
+        },
+        async speakSentence (sentence) {
+          if ('speechSynthesis' in window ) {
+            console.log("vou falar: ", sentence)
+            var to_speak = new SpeechSynthesisUtterance(sentence);
+            to_speak.lang = 'pt-BR'
+
+            window.speechSynthesis.speak(to_speak);
+
+            return new Promise(resolve => {
+              to_speak.onend = resolve;
+            });
+          }
+
+        },
+        ToggleMic() {
+          // Vamos iniciar o preenchimento do forms
+          this.speakSentence("Olá!").then(() => {
+            this.speakSentence(this.fields_array[0]).then(() => {
+              console.log('FIM SPEECH')
+              console.log('sr')
+              console.log(sr)
+              if (this.isRecording) {
+                sr.stop()
+              } else {
+                sr.start()
+              }
+            })
+          })
+          // await speakSentence("Olá! Vamos iniciar o preenchimento do forms")
+          // console.log('FIM SPEECH')
+          
+          
+        },
+        CheckForCommand () {
+            
+          //   const t = result[0].transcript;
+          //   if (t.includes('stop recording')) {
+          //     console.log('STOP RECORDING')
+          //     sr.stop()
+          //   } else if (
+          //     t.includes('what is the time') ||
+          //     t.includes('what\'s the time')
+          //   ) {
+          //     sr.stop()
+          //     alert(new Date().toLocaleTimeString())
+          //     setTimeout(() => sr.start(), 100)
+          //   }
+          // }
+
+          // console.log('result')
+          // console.log(result)
+
+          console.log("IF ACABOU FORMS com i = ", i)
+
+          if (i >= this.selectors_array.length - 1) {
+                // está no último campo. E já escrevi nele.
+                // acabo o forms
+                console.log("No ultimo campo")
+
+                console.log("ACABOU O FORMS")
+
+                this.speakSentence("O formulário acabou. Vou submeter").then(() => {
+                  alert("SUBMETENDO...")
+                })
+          }
+          else {
+            // não é o ultimo campo. Falo o proximo campo
+
+            i = i + 1
+            this.speakSentence(this.fields_array[i]).then((result) => {
+              console.log('result')
+              console.log(result)
+              console.log('FIM SPEECH')
+              
+              sr.start()
+            })
+          }
+        }
+        
+    }
 }
 
-body {
-	background: #281936;
-	color: #FFF;
-}
-</style>
+</script>
