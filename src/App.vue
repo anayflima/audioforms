@@ -4,19 +4,29 @@ import { useSpeechSynthesis } from '@vueuse/core'
 
 const isRecording = ref(false)
 const transcript = ref('')
+
 let selectors_array = ['#name', '#age', '#curso']
-let fields_array = ['Nome', 'Idade', 'Curso']
+// let fields_array = ['Nome', 'Idade', 'Curso']
+let fields_array = [
+    {
+        field: 'Nome',
+        description: 'Insira o seu nome completo',
+    },
+    {
+        field: 'Idade',
+        description: 'Insira a sua idade em anos',
+    },
+    {
+        field: 'Curso',
+        description: 'Insira o seu curso na graduação',
+    },
+]
+
 
 let i = 0
 
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
-// const Synthesis = window.speechSynthesis;
 const sr = new Recognition()
-// const voice = ref<SpeechSynthesisVoice>(undefined as unknown as SpeechSynthesisVoice)
-const text = ref('Hello, everyone! Good morning!')
-// const speech = useSpeechSynthesis(text, {
-//   voice,
-// })
 
 sr.lang = 'pt-BR';
 
@@ -24,7 +34,7 @@ onMounted(() => {
 	// if you stop talking, it will continue there listening it
 	sr.continuous = true
 
-	sr.interimResults = false
+	sr.interimResults = true
 
 	sr.onstart = () => {
 		console.log('SR Started')
@@ -37,29 +47,15 @@ onMounted(() => {
 	}
 
 	sr.onresult = (evt) => {
-		// speech.speak()
-		console.log('evt.results')
-		console.log(evt.results)
+		// console.log('evt.results')
+		// console.log(evt.results)
 		for (let i = 0; i < evt.results.length; i++) {
 			const result = evt.results[i]
 
 			if (result.isFinal) CheckForCommand(result)
 		}
 
-		// const t = Array.from(evt.results)
-		// 	.map(result => result[0])
-		// 	.map(result => result.transcript)
-		// 	.join('')
-
 		let evt_results_array = Array.from(evt.results)
-
-		// console.log('evt_results_array')
-		// console.log(evt_results_array)
-		// console.log("evt_results_array.length -1")
-		// console.log(evt_results_array.length -1)
-
-		// console.log(evt_results_array[evt_results_array.length -1])
-		// console.log(evt_results_array[evt_results_array.length -1][0].transcript)
 		
 		const t = evt_results_array[evt_results_array.length -1][0].transcript
 
@@ -67,52 +63,50 @@ onMounted(() => {
 
 		console.log("i = ", i)
 
-		// if(this) {
-		// 	console.log('ok')
-		// 	let inputEl = this.$refs.input.$el.querySelector('input')
-		// 	console.dir(inputEl)
-		// 	this.input = t
-		// }
-		// console.dir(transcript)
+        const field = document.querySelector(selectors_array[i])
+        // console.dir(field)
+        field.value = t
 
-		// transcript.value = t
-		// console.log('depois')
-		// console.dir(transcript)
-
-		if (i < selectors_array.length) {
+		// if (i < selectors_array.length) {
 			
-			const field = document.querySelector(selectors_array[i])
-			// console.dir(field)
-			field.value = t
-			i = i + 1
-			speakSentence(fields_array[i]).then((result) => {
-				console.log('FIM SPEECH')
-				console.log("IF ACABOU FORMS com i = ", i)
-				if (i >= selectors_array.length) {
-					console.log("ACABOU O FORMS")
-					alert("ACABOU O FORMS")
-					// sr.stop()
-				}
-			})
-		}
-		// console.dir(field)
+		// 	const field = document.querySelector(selectors_array[i])
+		// 	// console.dir(field)
+
+        // const field = document.querySelector(selectors_array[i])
+        // console.dir(field)
+
+		// 	field.value = t
+		// 	i = i + 1
+		// 	speakSentence(fields_array[i]).then((result) => {
+		// 		console.log('FIM SPEECH')
+		// 		console.log("IF ACABOU FORMS com i = ", i)
+		// 		if (i >= selectors_array.length) {
+		// 			console.log("ACABOU O FORMS")
+		// 			alert("ACABOU O FORMS")
+		// 			// sr.stop()
+		// 		}
+		// 	})
+		// }
 		
 	}
 })
 
 const CheckForCommand = (result) => {
+    console.log(result)
 	const t = result[0].transcript;
-	if (t.includes('stop recording')) {
-		console.log('STOP RECORDING')
+	if (t.includes('final')) {
+		console.log('identifiquei fim')
 		sr.stop()
-	} else if (
-		t.includes('what is the time') ||
-		t.includes('what\'s the time')
-	) {
-		sr.stop()
-		alert(new Date().toLocaleTimeString())
-		setTimeout(() => sr.start(), 100)
 	}
+    
+    // else if (
+	// 	t.includes('what is the time') ||
+	// 	t.includes('what\'s the time')
+	// ) {
+	// 	sr.stop()
+	// 	alert(new Date().toLocaleTimeString())
+	// 	setTimeout(() => sr.start(), 100)
+	// }
 }
 
 async function speakSentence (sentence) {
@@ -131,8 +125,9 @@ async function speakSentence (sentence) {
 }
 
 const ToggleMic = () => {
+    // 
 	speakSentence("Olá! Vamos iniciar o preenchimento do forms").then((result) => {
-		speakSentence(fields_array[0]).then((result) => {
+		speakSentence(fields_array[0].description).then((result) => {
 			console.log('FIM SPEECH')
 			if (isRecording.value) {
 				sr.stop()
@@ -156,8 +151,14 @@ const ToggleMic = () => {
 		<br/>
 		<!-- <input ref="transcript"></input> -->
 
+
 		 <form action="/action_page.php">
-			<label for="name">Nome:</label><br>
+            <div v-for="(item, index) in fields_array">
+                <label :for="item.field"> {{ item.field }} </label><br>
+                <input type="text" id="name" name="name" value=""><br><br>
+            </div>
+
+            <!-- <label for="name">Nome:</label><br>
 			<input type="text" id="name" name="name" value=""><br><br>
 
 			<label for="age">Idade:</label><br>
@@ -165,8 +166,14 @@ const ToggleMic = () => {
 
 			<label for="curso">Curso:</label><br>
 			<input type="text" id="curso" name="curso" value=""><br><br>
-			<input type="submit" value="Submit">
+			<input type="submit" value="Submit"> -->
 		</form> 
+
+        <ul id="example-2">
+            <li v-for="(item, index) in selectors_array">
+                {{ parentMessage }} - {{ index }} - {{ item }}
+            </li>
+        </ul>
 		
 		<br/>
 		<!-- <input id="input1" ref="transcript" v-model="message" placeholder="edit me" /> -->
